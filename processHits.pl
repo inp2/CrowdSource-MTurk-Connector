@@ -143,7 +143,7 @@ END_XML
 sub roundTwo
 {
   my $properties = {
-      Title       => 'Filter some Provided text',
+      Title       => 'Filter some of the Provided text',
       Description => 'Remove words that are profanity or not adjectives.',
       Keywords    => 'description, filter, adjective',
       Reward => {
@@ -216,8 +216,32 @@ sub removeHITS
 	}); 
 }
 
+sub generateContentFile
+{
+
+}
+
 sub createWordCloud
 {
+  my $file = "secondRound-results.csv";
+  my $fileout = "secondRound-resultsmod.csv";
+  open my $in,  '<',  $file      or die "Can't read old file: $!";
+  open my $out, '>', "$fileout" or die "Can't write new file: $!";
+
+  #print $out "# Add this line to the top\n"; # <--- HERE'S THE MAGIC
+  print $out "AssignmentId,AssignmentStatus,HITId,WorkerId,Num,Answers\n";
+
+  my $cntr = 0;
+  while( <$in> )
+    {
+      if($cntr!=0){
+        print $out $_;;
+      }
+      $cntr = $cntr+1;
+    }
+
+  close $in;
+  close $out;
   print "Printing the word cloud";
   open(my $fh, '>', 'out.html');
   print $fh  <<HTML;
@@ -244,9 +268,20 @@ img{
 <img src="$ARGV[1]" alt="" width="500">
 </center>
 <script>
-d3.text("content.txt", function(data) {
-  ds = data.split("\\n");
-  ds = ds.slice(0,ds.length-1);
+d3.csv("secondRound-resultsmod.csv", function(data) {
+
+  ds = [];
+  for ( i in data ) {
+    var sta = data[i]["Answers"];
+    sta = sta.trim().split(" ");
+    for ( j in sta ) {
+      if (sta[j] != "") {
+        ds.push(sta[j].trim().toLowerCase());
+      }
+    }
+
+
+  }
   tds = [];
   wd = [];
 
@@ -265,7 +300,7 @@ d3.text("content.txt", function(data) {
   }
   //
   // We want max font size to be 150. Just eyeing it up.
-  var fs = d3.scale.linear().range([1,150]).domain([1,maxVar]);
+  var fs = d3.scale.linear().range([12,130]).domain([1,maxVar]);
   var colors = d3.scale.category20();
 
   // We should set these programmatically. I'm just not sure how.

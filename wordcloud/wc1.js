@@ -1,6 +1,20 @@
-d3.text("content.txt", function(data) {
-  ds = data.split("\n");
-  ds = ds.slice(0,ds.length-1);
+d3.csv("../secondRound-resultsmod.csv", function(data) {
+  //ds = data.split("\n");
+  //ds = ds.slice(0,ds.length-1);
+  //
+  //  ds needs to be a list of words
+  ds = [];
+  for ( i in data ) {
+    var sta = data[i]["Answers"];
+    sta = sta.trim().split(" ");
+    for ( j in sta ) {
+      if (sta[j] != "") {
+        ds.push(sta[j].trim().toLowerCase());
+      }
+    }
+
+
+  }
   tds = [];
   wd = [];
 
@@ -19,7 +33,7 @@ d3.text("content.txt", function(data) {
   }
   //
   // We want max font size to be 150. Just eyeing it up.
-  var fs = d3.scale.linear().range([1,150]).domain([1,maxVar]);
+  var fs = d3.scale.linear().range([12,150]).domain([1,maxVar]);
   var colors = d3.scale.category20();
 
   var d1 = 1000;
