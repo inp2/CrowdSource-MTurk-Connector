@@ -156,8 +156,13 @@ sub roundTwo
       MaxAssignments              => 1,
       LifetimeInSeconds           => 60 * 60
   };
-
-  my $mturk = Net::Amazon::MechanicalTurk->new();
+  
+  #This is for the sandboxed code
+  #my $mturk = Net::Amazon::MechanicalTurk->new();
+  
+  #Create a new MTurk client wihtout using mturk.properties, this is to unsandbox HITs
+  my $mturk = Net::Amazon::MechanicalTurk->new(
+ 	serviceUrl => 'https://mechanicalturk.amazonaws.com/?Service=AWSMechanicalTurkRequester');
 
   $mturk->loadHITs(
       properties => $properties,
