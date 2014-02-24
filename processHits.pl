@@ -4,6 +4,9 @@ use warnings;
 use Net::Amazon::MechanicalTurk;
 use Net::Amazon::MechanicalTurk::RowData;
 
+# Ben: 
+# It now takes a url to an image as an argument.
+
 # perl processhits.pl -register
 # register your Amazon Mturk Keys
 #
@@ -45,6 +48,8 @@ elsif($ARGV[0] eq "-wordcloud")
 	&createWordCloud;
 	die;
 }
+
+my $question = "Please provide three adjectives to describe the picture.";
 sub questionTemplate {
     my %params = %{$_[0]};
     return <<END_XML;
@@ -53,7 +58,9 @@ sub questionTemplate {
   <Question>
     <QuestionIdentifier>1</QuestionIdentifier>
     <QuestionContent>
-      <Text>$params{question}</Text>
+      <FormattedContent><![CDATA[<h1>Describe image using three adjectives</h1>
+<p><img alt="" src="$ARGV[0]" /></p>
+<p>Enter words, seperated by spaces into box:</p>]]></FormattedContent>
     </QuestionContent>
     <AnswerSpecification>
       <FreeTextAnswer/>
@@ -64,9 +71,9 @@ END_XML
 }
 
 my $properties = {
-    Title       => 'FAVORITE HASHTAG',
-    Description => 'Let Us Know What Is Your Favorite HashTag.',
-    Keywords    => 'Twitter, WordCloud, HCI',
+    Title       => 'Describe Image',
+    Description => 'Describe an image using three adjectives',
+    Keywords    => 'description, tagging, adjective',
     Reward => {
         CurrencyCode => 'USD',
         Amount       => 0.00
@@ -74,7 +81,7 @@ my $properties = {
     RequesterAnnotation         => 'Question',
     AssignmentDurationInSeconds => 60,
     AutoApprovalDelayInSeconds  => 60 * 60 * 10,
-    MaxAssignments              => 3,
+    MaxAssignments              => 10,
     LifetimeInSeconds           => 60 * 60
 };
 
@@ -83,8 +90,8 @@ my $mturk = Net::Amazon::MechanicalTurk->new();
 $mturk->loadHITs(
     properties => $properties,
     input      => "loadhits-input.csv",
-    question   => \&questionTemplate,
     progress   => \*STDOUT,
+    question   => \&questionTemplate,
     success    => "loadhits-success.csv",
     fail       => "loadhits-failure.csv"
 );
@@ -117,7 +124,7 @@ sub removeHITS
 			$mturk->deleteHIT($hitId, $autoApprove);
 		};
 		if($@) {
-			warn "Cloudn't delete hit $hitId - " . $mturk->response->errorCode . "\n";
+			warn "Couldn't delete hit $hitId - " . $mturk->response->errorCode . "\n";
 		}
 	}); 
 }
