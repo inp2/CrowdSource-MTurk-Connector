@@ -1,3 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Word Cloud Example</title>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<link href='http://fonts.googleapis.com/css?family=Exo' rel='stylesheet' type='text/css'>
+<!-- D3 Word cloud library from: "https://github.com/jasondavies/d3-cloud" -->
+<script src="https://raw2.github.com/jasondavies/d3-cloud/master/d3.layout.cloud.js" charset="utf-8"></script>
+</head>
+<body>
+<img src="http://i.imgur.com/w6SxGNW.jpg" alt="" width="500">
+<script>
 d3.text("content.txt", function(data) {
   ds = data.split("\n");
   ds = ds.slice(0,ds.length-1);
@@ -22,6 +34,7 @@ d3.text("content.txt", function(data) {
   var fs = d3.scale.linear().range([1,150]).domain([1,maxVar]);
   var colors = d3.scale.category20();
 
+  // We should set these programmatically. I'm just not sure how.
   var d1 = 1000;
   var d2 = 1000;
 
@@ -54,3 +67,6 @@ d3.text("content.txt", function(data) {
     .text(function(d) { return d.text; });
   }
 });
+</script>
+</body>
+</html>
