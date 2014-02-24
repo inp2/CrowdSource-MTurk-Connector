@@ -48,9 +48,29 @@ elsif($ARGV[0] eq "-wordcloud")
 	&createWordCloud;
 	die;
 }
+elsif($ARGV[0] eq "-roundOne")
+{
+  &roundOne;
+  die;
+}
+elsif($ARGV[0] eq "-getOne")
+{
+	&getFirstResults;
+	die("Your files are located in loadhits-results.csv");
+}
+elsif($ARGV[0] eq "-roundTwo")
+{
+  &roundTwo;
+  die;
+}
+elsif($ARGV[0] eq "-getTwo")
+{
+	&getSecondResults;
+	die("Your files are located in loadhits-results.csv");
+}
 
-my $question = "Please provide three adjectives to describe the picture.";
-sub questionTemplate {
+my $question1 = "Please provide three adjectives to describe the picture.";
+sub question1Template {
     my %params = %{$_[0]};
     return <<END_XML;
 <?xml version="1.0" encoding="UTF-8"?>
@@ -59,8 +79,8 @@ sub questionTemplate {
     <QuestionIdentifier>1</QuestionIdentifier>
     <QuestionContent>
       <FormattedContent><![CDATA[<h1>Describe image using three adjectives</h1>
-<p><img alt="" src="$ARGV[0]" /></p>
-<p>Enter words, seperated by spaces into box:</p>]]></FormattedContent>
+<p><img alt="" src="$ARGV[1]" /></p>
+<p>Enter words, <b>seperated by spaces</b> into box:</p>]]></FormattedContent>
     </QuestionContent>
     <AnswerSpecification>
       <FreeTextAnswer/>
@@ -70,44 +90,111 @@ sub questionTemplate {
 END_XML
 }
 
-my $properties = {
-    Title       => 'Describe Image',
-    Description => 'Describe an image using three adjectives',
-    Keywords    => 'description, tagging, adjective',
-    Reward => {
-        CurrencyCode => 'USD',
-        Amount       => 0.00
-    },
-    RequesterAnnotation         => 'Question',
-    AssignmentDurationInSeconds => 60,
-    AutoApprovalDelayInSeconds  => 60 * 60 * 10,
-    MaxAssignments              => 10,
-    LifetimeInSeconds           => 60 * 60
-};
+sub roundOne
+{
+  my $properties = {
+      Title       => 'Describe Image',
+      Description => 'Describe an image using three adjectives',
+      Keywords    => 'description, tagging, adjective',
+      Reward => {
+          CurrencyCode => 'USD',
+          Amount       => 0.00
+      },
+      RequesterAnnotation         => 'Question',
+      AssignmentDurationInSeconds => 60,
+      AutoApprovalDelayInSeconds  => 60 * 60 * 10,
+      MaxAssignments              => 10,
+      LifetimeInSeconds           => 60 * 60
+  };
 
-my $mturk = Net::Amazon::MechanicalTurk->new();
+  my $mturk = Net::Amazon::MechanicalTurk->new();
 
-$mturk->loadHITs(
-    properties => $properties,
-    input      => "loadhits-input.csv",
-    progress   => \*STDOUT,
-    question   => \&questionTemplate,
-    success    => "loadhits-success.csv",
-    fail       => "loadhits-failure.csv"
-);
+  $mturk->loadHITs(
+      properties => $properties,
+      input      => "firstRound-input.csv",
+      progress   => \*STDOUT,
+      question   => \&question1Template,
+      success    => "firstRound-success.csv",
+      fail       => "loadhits-failure.csv"
+  );
 
-sub getResults
+}
+
+sub question2Template {
+    my %params = %{$_[0]};
+    return <<END_XML;
+<?xml version="1.0" encoding="UTF-8"?>
+<QuestionForm xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/QuestionForm.xsd">
+  <Question>
+    <QuestionIdentifier>2</QuestionIdentifier>
+    <QuestionContent>
+      <FormattedContent><![CDATA[<h1>Remove any profanities, swears, or vulgar language.</h1>
+<p>Edit words so that they are, <b>seperated by spaces</b>, contain only adjectives, and contain no profanity:</p>]]></FormattedContent>
+    </QuestionContent>
+    <AnswerSpecification>
+      <FreeTextAnswer>
+      <DefaultText> $params{Answer1} </DefaultText>
+      </FreeTextAnswer>
+    </AnswerSpecification>
+  </Question>
+</QuestionForm>
+END_XML
+}
+sub roundTwo
+{
+  my $properties = {
+      Title       => 'Filter some Provided text',
+      Description => 'Remove words that are profanity or not adjectives.',
+      Keywords    => 'description, filter, adjective',
+      Reward => {
+          CurrencyCode => 'USD',
+          Amount       => 0.00
+      },
+      RequesterAnnotation         => 'Question',
+      AssignmentDurationInSeconds => 60,
+      AutoApprovalDelayInSeconds  => 60 * 60 * 10,
+      MaxAssignments              => 1,
+      LifetimeInSeconds           => 60 * 60
+  };
+
+  my $mturk = Net::Amazon::MechanicalTurk->new();
+
+  $mturk->loadHITs(
+      properties => $properties,
+      input      => "firstRound-results.csv",
+      progress   => \*STDOUT,
+      question   => \&question2Template,
+      success    => "secondRound-success.csv",
+      fail       => "loadhits-failure.csv"
+  );
+
+}
+
+
+
+sub getFirstResults
 {
 	my $mturk = Net::Amazon::MechanicalTurk->new;
 
 	$mturk->retrieveResults(
-		input => "loadhits-success.csv",
-		output => "loadhits-results.csv",
+		input => "firstRound-success.csv",
+		output => "firstRound-results.csv",
+		progress => \*STDOUT
+	);
+}
+sub getSecondResults
+{
+	my $mturk = Net::Amazon::MechanicalTurk->new;
+
+	$mturk->retrieveResults(
+		input => "secondRound-success.csv",
+		output => "secondRound-results.csv",
 		progress => \*STDOUT
 	);
 }
 
 
+# This wont work at all.
 sub removeHITS
 {
 	my $mturk = Net::Amazon::MechanicalTurk->new;
@@ -154,7 +241,7 @@ img{
 </head>
 <body>
 <center>
-<img src="http://i.imgur.com/w6SxGNW.jpg" alt="" width="500">
+<img src="$ARGV[1]" alt="" width="500">
 </center>
 <script>
 d3.text("content.txt", function(data) {
